@@ -98,9 +98,9 @@ The configuration reports the following measurements via MQTT:
 ### MQTT Topics
 
 The device publishes to MQTT topics with automatic Home Assistant discovery:
-- `pms-air-quality/sensor/pm25/state`
-- `pms-air-quality/sensor/pm10/state`
-- `pms-air-quality/sensor/pm100/state`
+- `pms-air-quality-esp8266/sensor/pm1_0/state`
+- `pms-air-quality-esp8266/sensor/pm2_5/state`
+- `pms-air-quality-esp8266/sensor/pm10_0/state`
 - And more for all configured sensors...
 
 ### Home Assistant Integration
