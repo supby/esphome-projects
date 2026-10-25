@@ -1,0 +1,110 @@
+esphome:
+  name: scd4x-co2-esp8266
+
+esp8266:
+  board: d1_mini
+  framework:
+    version: recommended
+
+# Enable logging
+logger:
+  level: INFO
+  # Lower the sensor log level to avoid flooding logs with readings
+  logs:
+    sensor: INFO
+    scd4x: INFO
+
+# MQTT Configuration
+mqtt:
+  broker: !secret mqtt_ip
+  port: !secret mqtt_port
+  username: !secret mqtt_user
+  password: !secret mqtt_password
+  discovery: true
+  discovery_prefix: homeassistant
+
+# OTA Updates
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# WiFi Configuration with Soft AP Fallback
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (soft AP) when WiFi connection fails
+  ap:
+    ssid: "SCD4x-CO2 Fallback"
+    password: "12345678"
+
+# Captive portal for easy configuration when in AP mode
+captive_portal:
+
+# I2C Configuration for SCD4x sensor
+# D1 Mini default I2C pins: SDA on GPIO4 (D2), SCL on GPIO5 (D1)
+i2c:
+  sda: GPIO4  # D2
+  scl: GPIO5  # D1
+  scan: true
+  frequency: 50kHz
+
+# SCD4x CO2 / Temperature / Humidity Sensor
+# Supports SCD40 and SCD41
+sensor:
+  - platform: scd4x
+    co2:
+      name: "CO2"
+      id: co2
+      unit_of_measurement: "ppm"
+      icon: "mdi:molecule-co2"
+      on_value:
+        then:
+          - logger.log:
+              format: "CO2: %.0f ppm"
+              args: ['x']
+    temperature:
+      name: "Temperature"
+      id: temperature
+    humidity:
+      name: "Humidity"
+      id: humidity
+    # Ambient pressure compensation can improve accuracy.
+    # altitude_compensation: 100m
+    # Automatic self-calibration (enable only in well-ventilated spaces
+    # that reach fresh-air CO2 levels ~400 ppm regularly)
+    automatic_self_calibration: true
+    update_interval: 60s
+
+  # WiFi Signal Strength
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 60s
+
+  # Uptime Sensor
+  - platform: uptime
+    name: "Uptime"
+    update_interval: 60s
+
+# Text Sensors for additional information
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+    ssid:
+      name: "Connected SSID"
+    mac_address:
+      name: "MAC Address"
+
+  - platform: version
+    name: "ESPHome Version"
+
+# Binary sensor to show connection status
+binary_sensor:
+  - platform: status
+    name: "Status"
+
+# Optional: Button to restart the device remotely
+button:
+  - platform: restart
+    name: "Restart"
